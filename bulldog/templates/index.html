@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}拉勾职位分析{% endblock %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>筛选条件:(-表示and，|表示or)</h2>
+    <div class="row">
+        <div class="form-group">
+            <label for="query-condition">查询语句</label>
+            <input class="form-control" id="query-condition" placeholder="Query">
+        </div>
+        <button id="query-btn" class="btn btn-default">Submit</button>
+    </div>
+</div>
+<br />
+<div class="container">
+    <h2>职位信息</h2>
+    <div class="row">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <td>职位名称</td>
+                    <td>公司Logo</td>
+                    <td>公司名称</td>
+                    <td>城市</td>
+                    <td>职位链接</td>
+                <tr>
+            </thead>
+            <tbody id="job-datas">
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script src="{{ url_for('static', filename='string-format.js') }}"></script>
+<script>
+$(document).on("click", "#query-btn", function(){
+    var query_val = $("#query-condition").val()
+    if (query_val == "") {return;}
+
+    console.log('query', query_val)
+    var $datas_dom = $("#job-datas")
+
+    $.get('/api/jobs', {'query-condition': query_val}, function(data){
+        if (data['c'] != 0){
+            alert(data['msg'])
+            return
+        }
+        $datas_dom.empty()
+        var html = ""
+        for (var i in data['datas']) {
+            console.log(data['datas'][i])
+            html += formatString('<tr><td>{position}</td><td>{company}</td><td><img width=50px height=50px src="{logo}" /></td><td>{city}</td><td><a target="_blank" href="{url}">{url}</a></td></tr>', data['datas'][i])
+        }
+        $datas_dom.append(html)
+    });
+
+});
+
+</script>
+{% endblock scripts %}
